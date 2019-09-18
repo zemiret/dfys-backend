@@ -6,20 +6,22 @@ class Skill(models.Model):
     name = models.CharField(max_length=128)
 
 
+class Category(models.Model):
+    name = models.CharField(max_length=128)
+
+
 class Activity(models.Model):
     title = models.CharField(max_length=128)
-    # category
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True)
+    skill = models.ForeignKey(Skill, on_delete=models.CASCADE)
     description = models.TextField()
     last_edit_date = models.DateTimeField()
 
 
 class Comment(models.Model):
-    pass
+    activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
 
 
 class Attachment(models.Model):
-    pass
+    activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
 
-
-class Category(models.Model):
-    name = models.CharField(max_length=128)
