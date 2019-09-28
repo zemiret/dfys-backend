@@ -15,12 +15,17 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from rest_framework import routers
 
-from dfys.core import views as core_views
+from dfys.core import views
+
+router = routers.DefaultRouter()
+router.register(r'categories', views.CategoryViewSet, basename='category')
+router.register(r'skills', views.SkillViewSet, basename='skill')
 
 urlpatterns = [
-    path('', core_views.index, name='index'),
+    path('', views.index, name='index'),
+    path('api/', include(router.urls)),
     path('admin/', admin.site.urls),
-    path('accounts/', include('django.contrib.auth.urls')),
+    #    path('accounts/', include('django.contrib.auth.urls')),
 ]
-
