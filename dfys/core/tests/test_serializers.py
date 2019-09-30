@@ -57,7 +57,7 @@ class TestCategorySerializer:
 @pytest.mark.django_db
 class TestFlatSkillSerializer:
     @mock_timezone_now
-    def test_serialization(self, testtime):
+    def test_serialization(self, testtime=None):
         skill = SkillFactory(name='Testname')
         s = FlatSkillSerializer(skill)
 
@@ -66,7 +66,7 @@ class TestFlatSkillSerializer:
         assert parse_datetime(s.data['add_date']) == testtime
 
     @mock_timezone_now
-    def test_create(self, testtime):
+    def test_create(self, testtime=None):
         request = create_user_request(APIRequestFactory().post)
         required_category = CategoryFactory(is_base_category=True,
                                             owner=request.user)

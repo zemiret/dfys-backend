@@ -1,5 +1,5 @@
 from datetime import datetime, timezone, timedelta
-# from functools import wraps
+from functools import wraps
 from unittest import mock
 
 from dfys.core.tests.test_factory import UserFactory
@@ -14,9 +14,13 @@ def create_user_request(test_method):
 
 
 def mock_timezone_now(func):
+    """
+    To be used as a decorator.
+    Wrapped function receives testtime as an argument
+    """
     testtime = datetime.now(tz=timezone.utc) - timedelta(days=30)
 
-#    @wraps(func)
+    @wraps(func)
     def wrapper(*args, **kwargs):
         with mock.patch('django.utils.timezone.now') as mock_now:
             mock_now.return_value = testtime
