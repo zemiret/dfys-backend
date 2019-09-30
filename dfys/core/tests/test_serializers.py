@@ -6,7 +6,7 @@ from rest_framework.test import APIRequestFactory
 from dfys.core.models import Category, Skill
 from dfys.core.serializers import CategorySerializer, FlatSkillSerializer
 from dfys.core.tests.test_factory import CategoryFactory, UserFactory, SkillFactory
-from dfys.core.tests.utils import create_user_request, mock_timezone_now
+from dfys.core.tests.utils import create_user_request, mock_now
 
 
 @pytest.mark.django_db
@@ -56,17 +56,17 @@ class TestCategorySerializer:
 
 @pytest.mark.django_db
 class TestFlatSkillSerializer:
-    @mock_timezone_now
-    def test_serialization(self, testtime=None):
+    def test_serialization(self, mocker):
+        mocker.patch('django.utils.timezone.now', mock_now)
         skill = SkillFactory(name='Testname')
         s = FlatSkillSerializer(skill)
 
         assert len(s.data['categories']) == 2
         assert s.data['name'] == 'Testname'
-        assert parse_datetime(s.data['add_date']) == testtime
+        assert parse_datetime(s.data['add_date']) == mock_now()
 
-    @mock_timezone_now
-    def test_create(self, testtime=None):
+    def test_create(self, mocker):
+        mocker.patch('django.utils.timezone.now', mock_now)
         request = create_user_request(APIRequestFactory().post)
         required_category = CategoryFactory(is_base_category=True,
                                             owner=request.user)
@@ -82,7 +82,7 @@ class TestFlatSkillSerializer:
 
         assert len(skill.categories.get_queryset()) == 1
         assert skill.name == 'TestSkill'
-        assert skill.add_date == testtime
+        assert skill.add_date == mock_now()
         assert skill.owner == request.user
 
     def test_update(self):

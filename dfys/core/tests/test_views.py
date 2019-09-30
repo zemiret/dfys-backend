@@ -52,7 +52,7 @@ class TestCategoryViewSet(APITestCase):
         self.assertEqual(response.data, s.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-    def test_delete(self):
+    def test_destroy(self):
         cat = CategoryFactory(is_base_category=False)
 
         self.client.force_login(self.user)
@@ -61,7 +61,7 @@ class TestCategoryViewSet(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Category.objects.filter(id=cat.id).exists(), False)
 
-    def test_delete_of_base_category(self):
+    def test_destroy_of_base_category(self):
         """
         Deletion of base category should not be possible
         """
@@ -72,3 +72,23 @@ class TestCategoryViewSet(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertEqual(Category.objects.filter(id=cat.id).exists(), True)
+
+
+class TestSkillViewSet(APITestCase):
+    def test_create(self):
+        pass
+
+    def test_list(self):
+        """
+        Should provide skills flatter overview
+        """
+        pass
+
+    def test_details(self):
+        """
+        Should provide skill detailed deep overview
+        """
+        pass
+
+    def test_destroy(self):
+        pass
