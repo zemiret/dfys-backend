@@ -16,6 +16,24 @@ class TestCategorySerializer:
                               name=category.name,
                               is_base_category=False)
 
+    def test_create(self):
+        request = APIRequestFactory().put('/testpath')
+        request.user = UserFactory()
+        category_name = 'CatName'
+        is_base = True
+
+        s = CategorySerializer(data={
+            'name': category_name,
+            'is_base_category': is_base
+        }, context={
+            'request': request
+        })
+        s.is_valid(raise_exception=True)
+        cat = Category.objects.get(id=s.save().id)
+
+        assert cat.name == category_name
+        assert cat.is_base_category is is_base
+
     def test_update(self):
         cat = CategoryFactory(is_base_category=False)
         user = UserFactory()
