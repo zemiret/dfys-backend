@@ -5,7 +5,7 @@ from django.db import models
 # Create your models here.
 class Category(models.Model):
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
-    name = models.CharField(max_length=128)
+    name = models.CharField(max_length=128, blank=False)
     is_base_category = models.BooleanField(default=False)
 
 
