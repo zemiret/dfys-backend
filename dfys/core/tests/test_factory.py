@@ -28,8 +28,8 @@ class SkillFactory(DjangoModelFactory):
 
     @factory.post_generation
     def add_categories(self, create, extracted, **kwargs):
-        self.categories.add(CategoryFactory(name='TestCategory1'))
-        self.categories.add(CategoryFactory(name='TestCategory2'))
+        self.categories.add(CategoryFactory(name='TestCategory1', is_base_category=True))
+        self.categories.add(CategoryFactory(name='TestCategory2', is_base_category=True))
 
 
 class ActivityFactory(DjangoModelFactory):

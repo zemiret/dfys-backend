@@ -1,9 +1,12 @@
-import pytest
-from rest_framework.test import APIRequestFactory, force_authenticate
 
-from dfys.core.models import Category
-from dfys.core.serializers import CategorySerializer
-from dfys.core.tests.test_factory import CategoryFactory, UserFactory
+import pytest
+from django.utils.dateparse import parse_datetime
+from rest_framework.test import APIRequestFactory
+
+from dfys.core.models import Category, Skill
+from dfys.core.serializers import CategorySerializer, FlatSkillSerializer
+from dfys.core.tests.test_factory import CategoryFactory, UserFactory, SkillFactory
+from dfys.core.tests.utils import create_user_request, mock_timezone_now
 
 
 @pytest.mark.django_db
@@ -17,8 +20,7 @@ class TestCategorySerializer:
                               is_base_category=False)
 
     def test_create(self):
-        request = APIRequestFactory().put('/testpath')
-        request.user = UserFactory()
+        request = create_user_request(APIRequestFactory().post)
         category_name = 'CatName'
         is_base = True
 
@@ -36,9 +38,7 @@ class TestCategorySerializer:
 
     def test_update(self):
         cat = CategoryFactory(is_base_category=False)
-        user = UserFactory()
-        request = APIRequestFactory().put('/testpath')
-        request.user = user
+        request = create_user_request(APIRequestFactory().put)
 
         s = CategorySerializer(instance=cat, data={
             'name': 'NewName',
@@ -52,3 +52,51 @@ class TestCategorySerializer:
 
         assert cat.name == 'NewName'
         assert cat.is_base_category is True
+
+
+@pytest.mark.django_db
+class TestFlatSkillSerializer:
+    @mock_timezone_now
+    def test_serialization(self, testtime):
+        skill = SkillFactory(name='Testname')
+        s = FlatSkillSerializer(skill)
+
+        assert len(s.data['categories']) == 2
+        assert s.data['name'] == 'Testname'
+        assert parse_datetime(s.data['add_date']) == testtime
+
+    @mock_timezone_now
+    def test_create(self, testtime):
+        request = create_user_request(APIRequestFactory().post)
+        required_category = CategoryFactory(is_base_category=True,
+                                            owner=request.user)
+
+        s = FlatSkillSerializer(data={
+            'name': 'TestSkill'
+        }, context={
+            'request': request
+        })
+
+        s.is_valid(raise_exception=True)
+        skill = Skill.objects.get(id=s.save().id)
+
+        assert len(skill.categories.get_queryset()) == 1
+        assert skill.name == 'TestSkill'
+        assert skill.add_date == testtime
+        assert skill.owner == request.user
+
+    def test_update(self):
+        request = create_user_request(APIRequestFactory().put)
+        skill = SkillFactory(name='OldName')
+
+        s = FlatSkillSerializer(instance=skill, data={
+            'name': 'NewName'
+        }, context={
+            'request': request
+        })
+
+        s.is_valid(raise_exception=True)
+        skill = Skill.objects.get(id=s.save().id)
+
+        assert skill.name == 'NewName'
+        assert skill.owner == request.user
