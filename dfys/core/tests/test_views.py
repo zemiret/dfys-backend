@@ -2,9 +2,9 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from dfys.core.models import Category
+from dfys.core.models import Category, Skill
 from dfys.core.serializers import CategorySerializer
-from dfys.core.tests.test_factory import CategoryFactory, UserFactory
+from dfys.core.tests.test_factory import CategoryFactory, UserFactory, SkillFactory, ActivityFactory
 
 
 class TestCategoryViewSet(APITestCase):
@@ -59,7 +59,7 @@ class TestCategoryViewSet(APITestCase):
         response = self.client.delete(reverse('category-detail', kwargs={'pk': cat.id}))
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertEqual(Category.objects.filter(id=cat.id).exists(), False)
+        self.assertFalse(Category.objects.filter(id=cat.id).exists())
 
     def test_destroy_of_base_category(self):
         """
@@ -75,20 +75,55 @@ class TestCategoryViewSet(APITestCase):
 
 
 class TestSkillViewSet(APITestCase):
+    def setUp(self) -> None:
+        self.user = UserFactory()
+
     def test_create(self):
-        pass
+        skill_name = 'SkillName'
+        self.client.force_login(self.user)
+        response = self.client.post(reverse('skill-list'), data={
+            'name': skill_name
+        })
+
+        skill = Skill.objects.get(id=response.data['id'])
+
+        self.assertEqual(skill.name, skill_name)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_list(self):
         """
         Should provide skills flatter overview
         """
-        pass
+        skill1 = SkillFactory(name='Skill1')
+        skill2 = SkillFactory(name='Skill2')
+
+        self.client.force_login(self.user)
+        response = self.client.get(reverse('skill-list'))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
 
     def test_details(self):
         """
         Should provide skill detailed deep overview
         """
-        pass
+        skill1 = SkillFactory(name='Skill1')
+        skill2 = SkillFactory(name='Skill2')
+        act1 = ActivityFactory(skill=skill1)
+        act2 = ActivityFactory(skill=skill1)
+
+        self.client.force_login(self.user)
+        response = self.client.get(reverse('skill-detail', kwargs={'pk': skill1.id}))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['categories']), 2)
+        self.assertIn('activities', response.data['categories'][0])
+        self.assertIn('activities', response.data['categories'][1])
 
     def test_destroy(self):
-        pass
+        skill1 = SkillFactory(name='Skill1')
+        self.client.force_login(self.user)
+        response = self.client.delete(reverse('skill-detail', kwargs={'pk': skill1.id}))
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(Skill.objects.filter(id=skill1.id).exists())
