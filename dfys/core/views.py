@@ -6,7 +6,7 @@ from rest_framework.exceptions import ValidationError
 
 from dfys.core.models import Category, Skill
 from dfys.core.permissions import IsOwner
-from dfys.core.serializers import CategorySerializer, FlatSkillSerializer
+from dfys.core.serializers import CategoryFlatSerializer, SkillFlatSerializer
 
 
 @login_required
@@ -15,7 +15,7 @@ def index(request):
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
-    serializer_class = CategorySerializer
+    serializer_class = CategoryFlatSerializer
     permission_classes = [IsOwner]
 
     def get_queryset(self):
@@ -29,7 +29,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
 
 class SkillViewSet(viewsets.ModelViewSet):
-    serializer_class = FlatSkillSerializer
+    serializer_class = SkillFlatSerializer
     permission_classes = [IsOwner]
 
     def get_queryset(self):

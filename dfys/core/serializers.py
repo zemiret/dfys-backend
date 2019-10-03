@@ -1,9 +1,15 @@
 from rest_framework import serializers
 
-from dfys.core.models import Category, Skill
+from dfys.core.models import Category, Skill, Activity
 
 
-class CategorySerializer(serializers.ModelSerializer):
+class ActivitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Activity
+        fields = '__all__'
+
+
+class CategoryFlatSerializer(serializers.ModelSerializer):
     owner = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -11,8 +17,16 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class FlatSkillSerializer(serializers.ModelSerializer):
-    categories = CategorySerializer(read_only=True, many=True)
+class CategoryInSkillSerializer(serializers.ModelSerializer):
+    activities = ActivitySerializer(read_only=True, many=True)
+
+    class Meta:
+        model = Category
+        exclude = ('owner', 'is_base_category')
+
+
+class SkillFlatSerializer(serializers.ModelSerializer):
+    categories = CategoryFlatSerializer(read_only=True, many=True)
     owner = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
     class Meta:
@@ -26,6 +40,14 @@ class FlatSkillSerializer(serializers.ModelSerializer):
         return skill
 
 
-class DeepSkillSerializer(serializers.ModelSerializer):
+class SkillDeepSerializer(serializers.ModelSerializer):
+    # TODO: How to serialize skill -> categories -> activities?
     class Meta:
         model = Skill
+        exclude = ('owner', )
+
+    def create(self, validated_data):
+        raise serializers.ValidationError('Skill cannot be created via DeepSkillSerializer')
+
+    def update(self, instance, validated_data):
+        raise serializers.ValidationError('Skill cannot be updated via DeepSkillSerializer')

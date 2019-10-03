@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker-compose run app pytest -v 
+docker-compose run app pytest -vv 

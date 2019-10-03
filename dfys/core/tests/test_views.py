@@ -3,7 +3,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from dfys.core.models import Category, Skill
-from dfys.core.serializers import CategorySerializer
+from dfys.core.serializers import CategoryFlatSerializer
 from dfys.core.tests.test_factory import CategoryFactory, UserFactory, SkillFactory, ActivityFactory
 
 
@@ -44,7 +44,7 @@ class TestCategoryViewSet(APITestCase):
         cat1 = CategoryFactory(is_base_category=True)
         cat2 = CategoryFactory(is_base_category=True)
         cat3 = CategoryFactory(is_base_category=False)
-        s = CategorySerializer([cat3, cat2, cat1], many=True)
+        s = CategoryFlatSerializer([cat3, cat2, cat1], many=True)
 
         self.client.force_login(cat1.owner)
         response = self.client.get(reverse('category-list'))
