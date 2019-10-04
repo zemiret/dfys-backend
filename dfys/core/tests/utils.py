@@ -11,6 +11,7 @@ def create_user_request(test_method):
 
     return request
 
+
 def mock_now():
     timezone = pytz.timezone("America/Los_Angeles")
     return datetime(2019, 10, 1, 0, 0, 0, 0, timezone)

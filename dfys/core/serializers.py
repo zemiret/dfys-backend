@@ -18,7 +18,7 @@ class CategoryFlatSerializer(serializers.ModelSerializer):
 
 
 class CategoryInSkillSerializer(serializers.ModelSerializer):
-    activities = ActivitySerializer(read_only=True, many=True, source='category.activity_set')
+    activities = ActivitySerializer(read_only=True, many=True, source='activity_set')
 
     class Meta:
         model = Category
@@ -41,7 +41,8 @@ class SkillFlatSerializer(serializers.ModelSerializer):
 
 
 class SkillDeepSerializer(serializers.ModelSerializer):
-    # TODO: How to serialize skill -> categories -> activities?
+    categories = CategoryInSkillSerializer(read_only=True, many=True)
+
     class Meta:
         model = Skill
         exclude = ('owner', )

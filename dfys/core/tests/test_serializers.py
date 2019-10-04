@@ -110,16 +110,18 @@ class TestSkillDeepSerializer:
         mocker.patch('django.utils.timezone.now', mock_now)
 
         skill = SkillFactory(name='TestSkill')
-
         categories = skill.categories.all()
-
-        act1 = ActivityFactory(title='Act1', category=categories[0], skill=skill)
-        act2 = ActivityFactory(title='Act2', category=categories[0], skill=skill)
-        act3 = ActivityFactory(title='Act3', category=categories[1], skill=skill)
+        act = ActivityFactory(title='Act1', category=categories[0], skill=skill)
 
         s = SkillDeepSerializer(skill)
 
-        assert s.data == dict(
+        data = s.data
+        data['add_date'] = parse_datetime(data['add_date'])
+        data_act = data['categories'][0]['activities'][0]
+        data_act['add_date'] = parse_datetime(data_act['add_date'])
+        data_act['modify_date'] = parse_datetime(data_act['modify_date'])
+
+        assert data == dict(
             id=skill.id,
             name='TestSkill',
             add_date=mock_now(),
@@ -129,33 +131,20 @@ class TestSkillDeepSerializer:
                     name=categories[0].name,
                     activities=[
                         dict(
-                            title=act2.title,
+                            id=act.id,
+                            title=act.title,
                             category=categories[0].id,
-                            description=act2.description,
-                            add_date=act2.add_date,
-                            modify_date=act2.modify_date
-                        ),
-                        dict(
-                            title=act1.title,
-                            category=categories[0].id,
-                            description=act1.description,
-                            add_date=act1.add_date,
-                            modify_date=act1.modify_date
+                            skill=skill.id,
+                            description=act.description,
+                            add_date=mock_now(),
+                            modify_date=mock_now()
                         )
                     ]
                 ),
                 dict(
                     id=categories[1].id,
                     name=categories[1].name,
-                    activities=[
-                        dict(
-                            title=act3.title,
-                            category=categories[0].id,
-                            description=act3.description,
-                            add_date=act3.add_date,
-                            modify_date=act3.modify_date
-                        ),
-                    ]
+                    activities=[]
                 )
             ]
         )
@@ -260,10 +249,14 @@ class TestCategoryInSkillSerializer:
         act = ActivityFactory(category=cat)
         s = CategoryInSkillSerializer(cat)
 
+        print(s.data)
+
+        activity = s.data['activities'][0]
+
         assert s.data['name'] == cat.name
-        assert s.data['activities']['title'] == act.title
-        assert s.data['activities']['category'] == cat.id
-        assert s.data['activities']['skill'] == act.skill
-        assert s.data['activities']['description'] == act.description
-        assert parse_datetime(s.data['activities']['add_date']) == mock_now()
-        assert parse_datetime(s.data['activities']['modify_date']) == mock_now()
+        assert activity['title'] == act.title
+        assert activity['category'] == cat.id
+        assert activity['skill'] == act.skill.id
+        assert activity['description'] == act.description
+        assert parse_datetime(activity['add_date']) == mock_now()
+        assert parse_datetime(activity['modify_date']) == mock_now()
