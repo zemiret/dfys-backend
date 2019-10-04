@@ -18,7 +18,7 @@ class CategoryFlatSerializer(serializers.ModelSerializer):
 
 
 class CategoryInSkillSerializer(serializers.ModelSerializer):
-    activities = ActivitySerializer(read_only=True, many=True)
+    activities = ActivitySerializer(read_only=True, many=True, source='category.activity_set')
 
     class Meta:
         model = Category

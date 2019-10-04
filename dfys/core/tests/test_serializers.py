@@ -5,7 +5,8 @@ from rest_framework import serializers
 from rest_framework.test import APIRequestFactory
 
 from dfys.core.models import Category, Skill, Activity
-from dfys.core.serializers import CategoryFlatSerializer, SkillFlatSerializer, SkillDeepSerializer, ActivitySerializer
+from dfys.core.serializers import CategoryFlatSerializer, SkillFlatSerializer, SkillDeepSerializer, \
+    ActivitySerializer, CategoryInSkillSerializer
 from dfys.core.tests.test_factory import CategoryFactory, SkillFactory, ActivityFactory
 from dfys.core.tests.utils import create_user_request, mock_now
 
@@ -162,23 +163,27 @@ class TestSkillDeepSerializer:
     def test_create(self):
         with pytest.raises(serializers.ValidationError):
             request = create_user_request(APIRequestFactory().post)
+            fake_cat = CategoryFactory()
 
             s = SkillDeepSerializer(data={
-                'name': 'SkillName'
+                'name': 'SkillName',
+                'categories': [fake_cat.id]
             }, context={
                 'request': request
             })
 
-            s.is_valid()
+            s.is_valid(raise_exception=True)
             s.save()
 
     def test_update(self):
         with pytest.raises(serializers.ValidationError):
             request = create_user_request(APIRequestFactory().post)
             skill = SkillFactory(name='OldName')
+            fake_cat = CategoryFactory()
 
             s = SkillDeepSerializer(instance=skill, data={
-                'name': 'NewName'
+                'name': 'NewName',
+                'categories': [fake_cat.id]
             }, context={
                 'request': request
             })
@@ -198,16 +203,6 @@ class TestActivitySerializer:
         assert s.data['skill'] == act.skill.id
         assert s.data['category'] == act.category.id
         assert s.data['description'] == act.description
-
-#        assert s.data == dict(
-#            id=act.id,
-#            title=act.title,
-#            skill=act.skill.id,
-#            category=act.category.id,
-#            description=act.description,
-#            add_date=mock_now().isoformat(),
-#            modify_date=mock_now().isoformat()
-#        )
 
     def test_create(self, mocker):
         mocker.patch('django.utils.timezone.now', mock_now)
@@ -255,3 +250,20 @@ class TestActivitySerializer:
         assert act.skill.id == skill.id
         assert act.category.id == categories[1].id
         assert act.description == 'new_desc'
+
+
+@pytest.mark.django_db
+class TestCategoryInSkillSerializer:
+    def test_serialization(self, mocker):
+        mocker.patch('django.utils.timezone.now', mock_now)
+        cat = CategoryFactory()
+        act = ActivityFactory(category=cat)
+        s = CategoryInSkillSerializer(cat)
+
+        assert s.data['name'] == cat.name
+        assert s.data['activities']['title'] == act.title
+        assert s.data['activities']['category'] == cat.id
+        assert s.data['activities']['skill'] == act.skill
+        assert s.data['activities']['description'] == act.description
+        assert parse_datetime(s.data['activities']['add_date']) == mock_now()
+        assert parse_datetime(s.data['activities']['modify_date']) == mock_now()
