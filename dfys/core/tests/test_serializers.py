@@ -6,7 +6,7 @@ from rest_framework.test import APIRequestFactory
 
 from dfys.core.models import Category, Skill, Activity
 from dfys.core.serializers import CategoryFlatSerializer, SkillFlatSerializer, SkillDeepSerializer, \
-    ActivitySerializer, CategoryInSkillSerializer
+    ActivityFlatSerializer, CategoryInSkillSerializer
 from dfys.core.tests.test_factory import CategoryFactory, SkillFactory, ActivityFactory
 from dfys.core.tests.utils import create_user_request, mock_now
 
@@ -182,10 +182,10 @@ class TestSkillDeepSerializer:
 
 
 @pytest.mark.django_db
-class TestActivitySerializer:
+class TestActivityFlatSerializer:
     def test_serialization(self):
         act = ActivityFactory()
-        s = ActivitySerializer(act)
+        s = ActivityFlatSerializer(act)
 
         assert s.data['id'] == act.id
         assert s.data['title'] == act.title
@@ -199,7 +199,7 @@ class TestActivitySerializer:
         skill = SkillFactory()
         categories = skill.categories.all()
 
-        s = ActivitySerializer(data=dict(
+        s = ActivityFlatSerializer(data=dict(
             title='NewAct',
             skill=skill.id,
             category=categories[0].id,
@@ -223,7 +223,7 @@ class TestActivitySerializer:
         categories = skill.categories.all()
         act = ActivityFactory(skill=skill, category=categories[0])
 
-        s = ActivitySerializer(instance=act, data=dict(
+        s = ActivityFlatSerializer(instance=act, data=dict(
             title='ModifiedAct',
             skill=skill.id,
             category=categories[1].id,

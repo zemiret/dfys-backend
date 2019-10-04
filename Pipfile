@@ -14,6 +14,7 @@ django = "*"
 psycopg2 = "*"
 djangorestframework = "*"
 factory-boy = "*"
+djangorestframework-camel-case = "*"
 
 [requires]
 python_version = "3.7"

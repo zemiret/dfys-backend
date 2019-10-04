@@ -6,7 +6,7 @@ from rest_framework.exceptions import ValidationError
 
 from dfys.core.models import Category, Skill
 from dfys.core.permissions import IsOwner
-from dfys.core.serializers import CategoryFlatSerializer, SkillFlatSerializer, SkillDeepSerializer
+from dfys.core.serializers import CategoryFlatSerializer, SkillFlatSerializer, SkillDeepSerializer, ActivityFlatSerializer
 
 
 @login_required
@@ -40,3 +40,5 @@ class SkillViewSet(viewsets.ModelViewSet):
             return SkillDeepSerializer
         return SkillFlatSerializer
 
+# TODO: Consider how to GET activity "details".
+# Maybe just an API view that will return all the activity entries given the activity id

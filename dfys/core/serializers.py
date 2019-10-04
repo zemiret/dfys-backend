@@ -3,7 +3,7 @@ from rest_framework import serializers
 from dfys.core.models import Category, Skill, Activity
 
 
-class ActivitySerializer(serializers.ModelSerializer):
+class ActivityFlatSerializer(serializers.ModelSerializer):
     class Meta:
         model = Activity
         fields = '__all__'
@@ -18,7 +18,7 @@ class CategoryFlatSerializer(serializers.ModelSerializer):
 
 
 class CategoryInSkillSerializer(serializers.ModelSerializer):
-    activities = ActivitySerializer(read_only=True, many=True, source='activity_set')
+    activities = ActivityFlatSerializer(read_only=True, many=True, source='activity_set')
 
     class Meta:
         model = Category
