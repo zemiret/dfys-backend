@@ -5,6 +5,7 @@ from rest_framework.test import APITestCase
 from dfys.core.models import Category, Skill
 from dfys.core.serializers import CategoryFlatSerializer
 from dfys.core.tests.test_factory import CategoryFactory, UserFactory, SkillFactory, ActivityFactory
+from dfys.core.views import ActivitiesViewSet
 
 
 class TestCategoryViewSet(APITestCase):
@@ -127,3 +128,32 @@ class TestSkillViewSet(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(Skill.objects.filter(id=skill1.id).exists())
+
+
+class TestActivityViewSet(APITestCase):
+    def setUp(self) -> None:
+        self.user = UserFactory()
+
+    def test_recent(self):
+        act1 = ActivityFactory()
+        act2 = ActivityFactory()
+        act3 = ActivityFactory()
+
+        self.client.force_login(self.user)
+        response = self.client.get(reverse('activity-recent'))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        self.assertEqual(response.data[0]['id'], act3.id)
+        self.assertEqual(response.data[1]['id'], act2.id)
+        self.assertEqual(response.data[2]['id'], act1.id)
+
+    def test_details(self):
+        raise Exception("Not implemented")
+
+    def test_create(self):
+        raise Exception("Not implemented")
+
+    def test_destroy(self):
+        raise Exception("Not implemented")
+

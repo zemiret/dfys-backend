@@ -1,13 +1,15 @@
+import os
 
 import pytest
 from django.utils.dateparse import parse_datetime
 from rest_framework import serializers
 from rest_framework.test import APIRequestFactory
 
-from dfys.core.models import Category, Skill, Activity
+from dfys.core.models import Category, Skill, Activity, ActivityEntry
 from dfys.core.serializers import CategoryFlatSerializer, SkillFlatSerializer, SkillDeepSerializer, \
-    ActivityFlatSerializer, CategoryInSkillSerializer
-from dfys.core.tests.test_factory import CategoryFactory, SkillFactory, ActivityFactory
+    ActivityFlatSerializer, CategoryInSkillSerializer, ActivityDeepSerializer
+from dfys.core.tests.test_factory import CategoryFactory, SkillFactory, ActivityFactory, CommentFactory, \
+    AttachmentFactory
 from dfys.core.tests.utils import create_user_request, mock_now
 
 
@@ -260,3 +262,57 @@ class TestCategoryInSkillSerializer:
         assert activity['description'] == act.description
         assert parse_datetime(activity['add_date']) == mock_now()
         assert parse_datetime(activity['modify_date']) == mock_now()
+
+
+@pytest.mark.django_db
+class TestActivityDeepSerializer:
+    def test_serialization(self, mocker):
+        mocker.patch('django.utils.timezone.now', mock_now)
+        act = ActivityFactory()
+        attachment = AttachmentFactory(activity=act)
+        comment = CommentFactory(activity=act)
+
+        s = ActivityDeepSerializer(act)
+
+        data = s.data
+
+        from pprint import pprint
+        pprint(data)
+
+        comment_data = data['entries'][0]
+        attachment_data = data['entries'][1]
+
+        data['add_date'] = parse_datetime(data['add_date'])
+        data['modify_date'] = parse_datetime(data['modify_date'])
+        comment_data['add_date'] = parse_datetime(comment_data['add_date'])
+        comment_data['modify_date'] = parse_datetime(comment_data['modify_date'])
+        attachment_data['add_date'] = parse_datetime(attachment_data['add_date'])
+        attachment_data['modify_date'] = parse_datetime(attachment_data['modify_date'])
+
+        assert data == dict(
+            id=act.id,
+            title=act.title,
+            description=act.description,
+            skill=act.skill.id,
+            category=act.category.id,
+            add_date=mock_now(),
+            modify_date=mock_now(),
+            entries=[
+                dict(
+                    id=comment.id,
+                    type=ActivityEntry.COMMENT,
+                    add_date=mock_now(),
+                    modify_date=mock_now(),
+                    comment_content=comment.comment_content,
+                    attachment_content=None
+                ),
+                dict(
+                    id=attachment.id,
+                    type=ActivityEntry.ATTACHMENT,
+                    add_date=mock_now(),
+                    modify_date=mock_now(),
+                    attachment_content=None,
+                    comment_content=None
+                )
+            ]
+        )

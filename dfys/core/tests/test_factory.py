@@ -1,12 +1,15 @@
 import factory
+from django.core.files.uploadedfile import SimpleUploadedFile
 
 from factory.django import DjangoModelFactory
+
+from dfys.core.models import ActivityEntry
 
 
 class UserFactory(DjangoModelFactory):
     class Meta:
         model = 'auth.User'
-        django_get_or_create = ('username', )
+        django_get_or_create = ('username',)
 
     username = 'testuser'
 
@@ -40,3 +43,21 @@ class ActivityFactory(DjangoModelFactory):
     category = factory.SubFactory(CategoryFactory)
     skill = factory.SubFactory(SkillFactory)
     description = ''
+
+
+class AttachmentFactory(DjangoModelFactory):
+    class Meta:
+        model = 'core.ActivityEntry'
+
+    attachment_content = None
+    activity = factory.SubFactory(ActivityFactory)
+    type = ActivityEntry.ATTACHMENT
+
+
+class CommentFactory(DjangoModelFactory):
+    class Meta:
+        model = 'core.ActivityEntry'
+
+    comment_content = 'comment'
+    activity = factory.SubFactory(ActivityFactory)
+    type = ActivityEntry.COMMENT

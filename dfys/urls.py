@@ -22,6 +22,7 @@ from dfys.core import views
 router = routers.DefaultRouter()
 router.register(r'categories', views.CategoryViewSet, basename='category')
 router.register(r'skills', views.SkillViewSet, basename='skill')
+router.register(r'activities', views.ActivitiesViewSet, basename='activity')
 
 urlpatterns = [
     path('', views.index, name='index'),

@@ -1,12 +1,34 @@
 from rest_framework import serializers
 
-from dfys.core.models import Category, Skill, Activity
+from dfys.core.models import Category, Skill, Activity, ActivityEntry
+
+# TODO: COnsider which fields should be read_only
+
+
+class ActivityEntrySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ActivityEntry
+        exclude = ('activity', )
 
 
 class ActivityFlatSerializer(serializers.ModelSerializer):
     class Meta:
         model = Activity
         fields = '__all__'
+
+
+class ActivityDeepSerializer(serializers.ModelSerializer):
+    entries = ActivityEntrySerializer(many=True, source='activityentry_set')
+
+    class Meta:
+        model = Activity
+        fields = '__all__'
+
+    def create(self, validated_data):
+        raise serializers.ValidationError('Activity cannot be created via ActivityDeepSerializer')
+
+    def update(self, instance, validated_data):
+        raise serializers.ValidationError('Activity cannot be updated via ActivityDeepSerializer')
 
 
 class CategoryFlatSerializer(serializers.ModelSerializer):

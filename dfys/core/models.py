@@ -26,17 +26,18 @@ class Activity(models.Model):
 
 
 class ActivityEntry(models.Model):
-    class Meta:
-        abstract = True
+    COMMENT = 0
+    ATTACHMENT = 1
+
+    TYPE_CHOICES = (
+        (COMMENT, 'Comment'),
+        (ATTACHMENT, 'Attachment'),
+    )
 
     activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
     add_date = models.DateTimeField(auto_now_add=True)
     modify_date = models.DateTimeField(auto_now=True)
-
-
-class Comment(ActivityEntry):
-    content = models.TextField()
-
-
-class Attachment(ActivityEntry):
-    content = models.FileField()
+    # This is acting as a 2-base class. Maybe not the best solution
+    type = models.SmallIntegerField(choices=TYPE_CHOICES)
+    comment_content = models.TextField(null=True, blank=True)
+    attachment_content = models.FileField(null=True, blank=True)
