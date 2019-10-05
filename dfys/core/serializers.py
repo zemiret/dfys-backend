@@ -2,19 +2,19 @@ from rest_framework import serializers
 
 from dfys.core.models import Category, Skill, Activity, ActivityEntry
 
-# TODO: COnsider which fields should be read_only
-
 
 class ActivityEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = ActivityEntry
         exclude = ('activity', )
+        read_only_fields = ['add_date', 'modify_date', 'type']
 
 
 class ActivityFlatSerializer(serializers.ModelSerializer):
     class Meta:
         model = Activity
         fields = '__all__'
+        read_only_fields = ['add_date', 'modify_date']
 
 
 class ActivityDeepSerializer(serializers.ModelSerializer):
@@ -23,6 +23,7 @@ class ActivityDeepSerializer(serializers.ModelSerializer):
     class Meta:
         model = Activity
         fields = '__all__'
+        read_only_fields = ['add_date', 'modify_date']
 
     def get_entries(self, instance):
         entries = instance.activityentry_set.all().order_by('-modify_date')
@@ -41,6 +42,7 @@ class CategoryFlatSerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = '__all__'
+        read_only_fields = ['is_base_category']
 
 
 class CategoryInSkillSerializer(serializers.ModelSerializer):
@@ -58,6 +60,7 @@ class SkillFlatSerializer(serializers.ModelSerializer):
     class Meta:
         model = Skill
         fields = '__all__'
+        read_only_fields = ['add_date']
 
     def create(self, validate_data):
         base_categories = Category.objects.filter(owner=validate_data['owner'], is_base_category=True)
@@ -72,6 +75,7 @@ class SkillDeepSerializer(serializers.ModelSerializer):
     class Meta:
         model = Skill
         exclude = ('owner', )
+        read_only_fields = ['add_date']
 
     def create(self, validated_data):
         raise serializers.ValidationError('Skill cannot be created via DeepSkillSerializer')

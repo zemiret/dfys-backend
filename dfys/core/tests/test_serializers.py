@@ -26,11 +26,9 @@ class TestCategoryFlatSerializer:
     def test_create(self):
         request = create_user_request(APIRequestFactory().post)
         category_name = 'CatName'
-        is_base = True
 
         s = CategoryFlatSerializer(data={
             'name': category_name,
-            'is_base_category': is_base
         }, context={
             'request': request
         })
@@ -38,7 +36,6 @@ class TestCategoryFlatSerializer:
         cat = Category.objects.get(id=s.save().id)
 
         assert cat.name == category_name
-        assert cat.is_base_category is is_base
 
     def test_update(self):
         cat = CategoryFactory(is_base_category=False)
@@ -46,7 +43,6 @@ class TestCategoryFlatSerializer:
 
         s = CategoryFlatSerializer(instance=cat, data={
             'name': 'NewName',
-            'is_base_category': True
         }, context={
             'request': request
         })
@@ -55,7 +51,6 @@ class TestCategoryFlatSerializer:
         cat = Category.objects.get(id=s.save().id)
 
         assert cat.name == 'NewName'
-        assert cat.is_base_category is True
 
 
 @pytest.mark.django_db
@@ -72,8 +67,8 @@ class TestSkillFlatSerializer:
     def test_create(self, mocker):
         mocker.patch('django.utils.timezone.now', mock_now)
         request = create_user_request(APIRequestFactory().post)
-        required_category = CategoryFactory(is_base_category=True,
-                                            owner=request.user)
+        _required_category = CategoryFactory(is_base_category=True,
+                                             owner=request.user)
 
         s = SkillFlatSerializer(data={
             'name': 'TestSkill'

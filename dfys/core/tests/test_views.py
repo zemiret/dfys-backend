@@ -6,7 +6,6 @@ from dfys.core.models import Category, Skill, ActivityEntry, Activity
 from dfys.core.serializers import CategoryFlatSerializer
 from dfys.core.tests.test_factory import CategoryFactory, UserFactory, SkillFactory, ActivityFactory, CommentFactory, \
     AttachmentFactory
-from dfys.core.views import ActivitiesViewSet
 
 
 class TestCategoryViewSet(APITestCase):
@@ -15,19 +14,16 @@ class TestCategoryViewSet(APITestCase):
 
     def test_create(self):
         cat_name = 'CatName'
-        is_base = True
 
         self.client.force_login(self.user)
         response = self.client.post(reverse('category-list'), data={
             'name': cat_name,
-            'is_base_category': is_base
         })
 
         created_cat = Category.objects.get(id=response.data['id'])
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         self.assertEqual(created_cat.name, cat_name)
-        self.assertEqual(created_cat.is_base_category, is_base)
         self.assertEqual(created_cat.owner.id, self.user.id)
 
     def test_invalid_create(self):
