@@ -9,7 +9,8 @@ from rest_framework.response import Response
 
 from dfys.core.models import Category, Skill, Activity
 from dfys.core.permissions import IsOwner
-from dfys.core.serializers import CategoryFlatSerializer, SkillFlatSerializer, SkillDeepSerializer, ActivityFlatSerializer
+from dfys.core.serializers import CategoryFlatSerializer, SkillFlatSerializer, SkillDeepSerializer, \
+    ActivityFlatSerializer, ActivityDeepSerializer
 
 
 @login_required
@@ -46,13 +47,17 @@ class SkillViewSet(viewsets.ModelViewSet):
 class ActivitiesViewSet(viewsets.ModelViewSet):
     class IsActivityOwner(BasePermission):
         def has_object_permission(self, request, view, obj):
-            return obj.skill.owner == request.owner
+            return obj.skill.owner == request.user
 
     permission_classes = [IsActivityOwner]
-    serializer_class = ActivityFlatSerializer
 
     def get_queryset(self):
         return Activity.objects.filter(skill__owner=self.request.user)
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':
+            return ActivityDeepSerializer
+        return ActivityFlatSerializer
 
     @action(detail=False)
     def recent(self, request):
@@ -65,4 +70,6 @@ class ActivitiesViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(recent_activities, many=True)
         return Response(serializer.data)
+
+    # TODO: Add action for adding entry
 

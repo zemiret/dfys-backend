@@ -2,9 +2,10 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
-from dfys.core.models import Category, Skill
+from dfys.core.models import Category, Skill, ActivityEntry, Activity
 from dfys.core.serializers import CategoryFlatSerializer
-from dfys.core.tests.test_factory import CategoryFactory, UserFactory, SkillFactory, ActivityFactory
+from dfys.core.tests.test_factory import CategoryFactory, UserFactory, SkillFactory, ActivityFactory, CommentFactory, \
+    AttachmentFactory
 from dfys.core.views import ActivitiesViewSet
 
 
@@ -149,11 +150,48 @@ class TestActivityViewSet(APITestCase):
         self.assertEqual(response.data[2]['id'], act1.id)
 
     def test_details(self):
-        raise Exception("Not implemented")
+        act = ActivityFactory()
+        comment = CommentFactory(activity=act)
+        attachment = AttachmentFactory(activity=act)
+
+        self.client.force_login(self.user)
+        response = self.client.get(reverse('activity-detail', kwargs={'pk': act.id}))
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data['entries']), 2)
+        self.assertEqual(response.data['entries'][0]['type'], ActivityEntry.ATTACHMENT)
+        self.assertEqual(response.data['entries'][1]['type'], ActivityEntry.COMMENT)
 
     def test_create(self):
-        raise Exception("Not implemented")
+        skill = SkillFactory()
+        cat = skill.categories.all()[0]
+
+        self.client.force_login(self.user)
+
+        response = self.client.post(reverse('activity-list'), data={
+            'title': 'title',
+            'category': cat.id,
+            'skill': skill.id,
+            'description': 'desc',
+        })
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+        activity = Activity.objects.get(id=response.data['id'])
+        self.assertEqual(activity.title, 'title')
+        self.assertEqual(activity.description, 'desc')
+        self.assertEqual(activity.category, cat)
+        self.assertEqual(activity.skill, skill)
+
+    def test_adding_entry(self):
+        raise Exception("Not implemented!")
 
     def test_destroy(self):
-        raise Exception("Not implemented")
+        act = ActivityFactory()
+
+        self.client.force_login(self.user)
+        response = self.client.delete(reverse('activity-detail', kwargs={'pk': act.id}))
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(Activity.objects.filter(id=act.id).exists())
 

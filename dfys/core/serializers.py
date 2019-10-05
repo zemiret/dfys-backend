@@ -18,11 +18,15 @@ class ActivityFlatSerializer(serializers.ModelSerializer):
 
 
 class ActivityDeepSerializer(serializers.ModelSerializer):
-    entries = ActivityEntrySerializer(many=True, source='activityentry_set')
+    entries = serializers.SerializerMethodField()
 
     class Meta:
         model = Activity
         fields = '__all__'
+
+    def get_entries(self, instance):
+        entries = instance.activityentry_set.all().order_by('-modify_date')
+        return ActivityEntrySerializer(entries, many=True).data
 
     def create(self, validated_data):
         raise serializers.ValidationError('Activity cannot be created via ActivityDeepSerializer')
