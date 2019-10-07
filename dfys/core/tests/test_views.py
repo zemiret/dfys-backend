@@ -147,16 +147,14 @@ class TestActivityViewSet(APITestCase):
 
     def test_details(self):
         act = ActivityFactory()
-        comment = CommentFactory(activity=act)
-        attachment = AttachmentFactory(activity=act)
+        _attachment = AttachmentFactory(activity=act)
+        _comment = CommentFactory(activity=act)
 
         self.client.force_login(self.user)
         response = self.client.get(reverse('activity-detail', kwargs={'pk': act.id}))
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['entries']), 2)
-        self.assertEqual(response.data['entries'][0]['type'], ActivityEntry.ATTACHMENT)
-        self.assertEqual(response.data['entries'][1]['type'], ActivityEntry.COMMENT)
 
     def test_create(self):
         skill = SkillFactory()

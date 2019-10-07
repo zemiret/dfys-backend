@@ -49,15 +49,13 @@ class AttachmentFactory(DjangoModelFactory):
     class Meta:
         model = 'core.ActivityEntry'
 
-    attachment_content = None
+    attachment = None
     activity = factory.SubFactory(ActivityFactory)
-    type = ActivityEntry.ATTACHMENT
 
 
 class CommentFactory(DjangoModelFactory):
     class Meta:
         model = 'core.ActivityEntry'
 
-    comment_content = 'comment'
+    comment = 'comment'
     activity = factory.SubFactory(ActivityFactory)
-    type = ActivityEntry.COMMENT

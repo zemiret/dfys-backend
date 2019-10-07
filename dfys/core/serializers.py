@@ -4,9 +4,6 @@ from dfys.core.models import Category, Skill, Activity, ActivityEntry
 
 
 class ActivityEntrySerializer(serializers.ModelSerializer):
-    # TODO: Add attachment_content field serialized as a hyperlink to resource
-    # attachment_content =
-
     class Meta:
         model = ActivityEntry
         exclude = ('activity', )

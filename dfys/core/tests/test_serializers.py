@@ -271,9 +271,6 @@ class TestActivityDeepSerializer:
 
         data = s.data
 
-        from pprint import pprint
-        pprint(data)
-
         comment_data = data['entries'][0]
         attachment_data = data['entries'][1]
 
@@ -295,19 +292,17 @@ class TestActivityDeepSerializer:
             entries=[
                 dict(
                     id=comment.id,
-                    type=ActivityEntry.COMMENT,
                     add_date=mock_now(),
                     modify_date=mock_now(),
-                    comment_content=comment.comment_content,
-                    attachment_content=None
+                    comment=comment.comment,
+                    attachment=None
                 ),
                 dict(
                     id=attachment.id,
-                    type=ActivityEntry.ATTACHMENT,
                     add_date=mock_now(),
                     modify_date=mock_now(),
-                    attachment_content=None,
-                    comment_content=None
+                    attachment=None,
+                    comment=''
                 )
             ]
         )
