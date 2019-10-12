@@ -92,8 +92,8 @@ class TestSkillViewSet(APITestCase):
         """
         Should provide skills flatter overview
         """
-        skill1 = SkillFactory(name='Skill1')
-        skill2 = SkillFactory(name='Skill2')
+        _skill1 = SkillFactory(name='Skill1')
+        _skill2 = SkillFactory(name='Skill2')
 
         self.client.force_login(self.user)
         response = self.client.get(reverse('skill-list'))
@@ -106,9 +106,9 @@ class TestSkillViewSet(APITestCase):
         Should provide skill detailed deep overview
         """
         skill1 = SkillFactory(name='Skill1')
-        skill2 = SkillFactory(name='Skill2')
-        act1 = ActivityFactory(skill=skill1)
-        act2 = ActivityFactory(skill=skill1)
+        _skill2 = SkillFactory(name='Skill2')
+        _act1 = ActivityFactory(skill=skill1)
+        _act2 = ActivityFactory(skill=skill1)
 
         self.client.force_login(self.user)
         response = self.client.get(reverse('skill-detail', kwargs={'pk': skill1.id}))
@@ -177,8 +177,37 @@ class TestActivityViewSet(APITestCase):
         self.assertEqual(activity.category, cat)
         self.assertEqual(activity.skill, skill)
 
-    def test_adding_entry(self):
-        raise Exception("Not implemented!")
+    def test_create_entry(self):
+        act = ActivityFactory()
+
+        self.client.force_login(self.user)
+        response = self.client.post(reverse('activity-entries', kwargs={'pk': act.id}), data={
+            'comment': 'entryComment',
+        })
+
+        entry = ActivityEntry.objects.get(id=response.data['id'])
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(entry.activity, act)
+        self.assertEqual(entry.comment, 'entryComment')
+
+    def test_update_entry(self):
+        act = ActivityFactory()
+        entry = CommentFactory(comment='oldComment')
+
+        self.client.force_login(self.user)
+        response = self.client.put(reverse('activity-entries', kwargs={
+            'pk': act.id,
+            'entry_id': entry.id,
+        }), data={
+            'comment': 'newComment',
+        })
+        print(response.data)
+        entry = ActivityEntry.objects.get(id=response.data['id'])
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(entry.activity, act)
+        self.assertEqual(entry.comment, 'newComment')
 
     def test_destroy(self):
         act = ActivityFactory()

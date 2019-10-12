@@ -291,18 +291,16 @@ class TestActivityDeepSerializer:
             modify_date=mock_now(),
             entries=[
                 dict(
+                    id=attachment.id,
+                    add_date=mock_now(),
+                    modify_date=mock_now(),
+                    comment=''
+                ),
+                dict(
                     id=comment.id,
                     add_date=mock_now(),
                     modify_date=mock_now(),
                     comment=comment.comment,
-                    attachment=None
                 ),
-                dict(
-                    id=attachment.id,
-                    add_date=mock_now(),
-                    modify_date=mock_now(),
-                    attachment=None,
-                    comment=''
-                )
             ]
         )

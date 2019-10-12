@@ -49,7 +49,6 @@ class AttachmentFactory(DjangoModelFactory):
     class Meta:
         model = 'core.ActivityEntry'
 
-    attachment = None
     activity = factory.SubFactory(ActivityFactory)
 
 

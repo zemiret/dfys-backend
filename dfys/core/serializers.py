@@ -4,10 +4,14 @@ from dfys.core.models import Category, Skill, Activity, ActivityEntry
 
 
 class ActivityEntrySerializer(serializers.ModelSerializer):
+
     class Meta:
         model = ActivityEntry
-        exclude = ('activity', )
-        read_only_fields = ['add_date', 'modify_date', 'type']
+        fields = '__all__'
+        read_only_fields = ['add_date', 'modify_date']
+        extra_kwargs = {
+            'activity': {'write_only': True}
+        }
 
 
 class ActivityFlatSerializer(serializers.ModelSerializer):

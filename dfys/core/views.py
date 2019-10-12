@@ -1,16 +1,16 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import BasePermission
 from rest_framework.response import Response
 
-from dfys.core.models import Category, Skill, Activity
+from dfys.core.models import Category, Skill, Activity, ActivityEntry
 from dfys.core.permissions import IsOwner
 from dfys.core.serializers import CategoryFlatSerializer, SkillFlatSerializer, SkillDeepSerializer, \
-    ActivityFlatSerializer, ActivityDeepSerializer
+    ActivityFlatSerializer, ActivityDeepSerializer, ActivityEntrySerializer
 
 
 @login_required
@@ -60,7 +60,7 @@ class ActivitiesViewSet(viewsets.ModelViewSet):
         return ActivityFlatSerializer
 
     @action(detail=False)
-    def recent(self, request):
+    def recent(self, _request):
         recent_activities = Activity.objects.all().order_by('-modify_date')
 
         page = self.paginate_queryset(recent_activities)
@@ -71,5 +71,31 @@ class ActivitiesViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(recent_activities, many=True)
         return Response(serializer.data)
 
-    # TODO: Add action for adding entry
+    @action(detail=True, methods=['post'])
+    def entries(self, request, pk=None):
+        activity = self.get_object()
+        data = request.data
 
+        data['activity'] = activity.id
+
+        serializer = ActivityEntrySerializer(data=data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @entries.mapping.put
+    def update_entry(self, request, pk=None, *args, **kwargs):
+        # TODO: Make this work somehow
+        activity = self.get_object()
+        data = request.data
+
+        data['activity'] = activity.id
+
+        existing_entry_id = int(kwargs['entry_id'])
+        existing_entry = ActivityEntry.objects.get(id=existing_entry_id)
+        serializer = ActivityEntrySerializer(instance=existing_entry, data=data)
+        if serializer.is_valid(raise_exception=True):
+            serializer.save()
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
