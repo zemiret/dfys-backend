@@ -177,13 +177,30 @@ class TestActivityViewSet(APITestCase):
         self.assertEqual(activity.category, cat)
         self.assertEqual(activity.skill, skill)
 
+    def test_destroy(self):
+        act = ActivityFactory()
+
+        self.client.force_login(self.user)
+        response = self.client.delete(reverse('activity-detail', kwargs={'pk': act.id}))
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(Activity.objects.filter(id=act.id).exists())
+
+
+class TestEntriesViewSet(APITestCase):
+    def setUp(self) -> None:
+        self.user = UserFactory()
+
     def test_create_entry(self):
         act = ActivityFactory()
 
         self.client.force_login(self.user)
-        response = self.client.post(reverse('activity-entries', kwargs={'pk': act.id}), data={
-            'comment': 'entryComment',
-        })
+        response = self.client.post(reverse(
+            'activity-entry-list',
+            kwargs={'activity_pk': act.id}),
+            data={
+                'comment': 'entryComment',
+            })
 
         entry = ActivityEntry.objects.get(id=response.data['id'])
 
@@ -196,25 +213,14 @@ class TestActivityViewSet(APITestCase):
         entry = CommentFactory(comment='oldComment')
 
         self.client.force_login(self.user)
-        response = self.client.put(reverse('activity-entries', kwargs={
-            'pk': act.id,
-            'entry_id': entry.id,
+        response = self.client.put(reverse('activity-entry-detail', kwargs={
+            'activity_pk': act.id,
+            'pk': entry.id,
         }), data={
             'comment': 'newComment',
         })
-        print(response.data)
         entry = ActivityEntry.objects.get(id=response.data['id'])
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(entry.activity, act)
         self.assertEqual(entry.comment, 'newComment')
-
-    def test_destroy(self):
-        act = ActivityFactory()
-
-        self.client.force_login(self.user)
-        response = self.client.delete(reverse('activity-detail', kwargs={'pk': act.id}))
-
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertFalse(Activity.objects.filter(id=act.id).exists())
-

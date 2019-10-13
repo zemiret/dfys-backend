@@ -4,7 +4,6 @@ from dfys.core.models import Category, Skill, Activity, ActivityEntry
 
 
 class ActivityEntrySerializer(serializers.ModelSerializer):
-
     class Meta:
         model = ActivityEntry
         fields = '__all__'

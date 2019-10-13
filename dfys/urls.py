@@ -15,7 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from rest_framework import routers
+from rest_framework_nested import routers
 
 from dfys.core import views
 
@@ -24,10 +24,12 @@ router.register(r'categories', views.CategoryViewSet, basename='category')
 router.register(r'skills', views.SkillViewSet, basename='skill')
 router.register(r'activities', views.ActivitiesViewSet, basename='activity')
 
+activities_router = routers.NestedDefaultRouter(router, r'activities', lookup='activity')
+activities_router.register(r'entries', views.EntriesViewSet, basename='activity-entry')
 
 urlpatterns = [
     path('', views.index, name='index'),
     path('admin/', admin.site.urls),
     path('api/', include(router.urls)),
-    #    path('accounts/', include('django.contrib.auth.urls')),
+    path('api/', include(activities_router.urls)),
 ]
