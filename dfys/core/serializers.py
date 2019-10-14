@@ -9,7 +9,7 @@ class ActivityEntrySerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['add_date', 'modify_date']
         extra_kwargs = {
-            'activity': {'write_only': True}
+            'activity': {'write_only': True, 'required': False}
         }
 
 

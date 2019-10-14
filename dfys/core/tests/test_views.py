@@ -191,7 +191,7 @@ class TestEntriesViewSet(APITestCase):
     def setUp(self) -> None:
         self.user = UserFactory()
 
-    def test_create_entry(self):
+    def test_create(self):
         act = ActivityFactory()
 
         self.client.force_login(self.user)
@@ -200,6 +200,7 @@ class TestEntriesViewSet(APITestCase):
             kwargs={'activity_pk': act.id}),
             data={
                 'comment': 'entryComment',
+                'activity': act.id,
             })
 
         entry = ActivityEntry.objects.get(id=response.data['id'])
@@ -208,19 +209,50 @@ class TestEntriesViewSet(APITestCase):
         self.assertEqual(entry.activity, act)
         self.assertEqual(entry.comment, 'entryComment')
 
-    def test_update_entry(self):
-        act = ActivityFactory()
+    def test_update(self):
         entry = CommentFactory(comment='oldComment')
 
         self.client.force_login(self.user)
         response = self.client.put(reverse('activity-entry-detail', kwargs={
-            'activity_pk': act.id,
+            'activity_pk': entry.activity.id,
             'pk': entry.id,
         }), data={
             'comment': 'newComment',
         })
+
         entry = ActivityEntry.objects.get(id=response.data['id'])
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(entry.activity, act)
+        self.assertEqual(entry.activity, entry.activity)
         self.assertEqual(entry.comment, 'newComment')
+
+    def test_delete(self):
+        entry = CommentFactory(comment='oldComment')
+
+        self.client.force_login(self.user)
+        response = self.client.delete(reverse('activity-entry-detail', kwargs={
+            'activity_pk': entry.activity.id,
+            'pk': entry.id,
+        }))
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(ActivityEntry.objects.filter(id=entry.id).exists())
+
+    def test_list_not_allowed(self):
+        act = ActivityFactory()
+        self.client.force_login(self.user)
+        response = self.client.get(reverse(
+            'activity-entry-list',
+            kwargs={'activity_pk': act.id}))
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    def test_get_not_allowed(self):
+        entry = CommentFactory()
+
+        self.client.force_login(self.user)
+        response = self.client.get(reverse('activity-entry-detail', kwargs={
+            'activity_pk': entry.activity.id,
+            'pk': entry.id,
+        }))
+
+        self.assertEqual(response.status_code, status.HTTP_405_METHOD_NOT_ALLOWED)

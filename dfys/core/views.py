@@ -72,40 +72,9 @@ class ActivitiesViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
-#    @action(detail=True, methods=['post'])
-#    def entries(self, request, pk=None):
-#        activity = self.get_object()
-#        data = request.data
-#
-#        data['activity'] = activity.id
-#
-#        serializer = ActivityEntrySerializer(data=data)
-#        if serializer.is_valid(raise_exception=True):
-#            serializer.save()
-#
-#        return Response(serializer.data, status=status.HTTP_201_CREATED)
-#
-#    @entries.mapping.put
-#    def update_entry(self, request, pk=None, *args, **kwargs):
-#        # TODO: Make this work somehow
-#        # TODO: Actually change, we need the whole viewset for entries
-#        activity = self.get_object()
-#        data = request.data
-#
-#        data['activity'] = activity.id
-#
-#        existing_entry_id = int(kwargs['entry_id'])
-#        existing_entry = ActivityEntry.objects.get(id=existing_entry_id)
-#        serializer = ActivityEntrySerializer(instance=existing_entry, data=data)
-#        if serializer.is_valid(raise_exception=True):
-#            serializer.save()
-#
-#        return Response(serializer.data, status=status.HTTP_200_OK)
-
-
 class EntriesViewSet(mixins.CreateModelMixin,
-                     mixins.RetrieveModelMixin,
                      mixins.DestroyModelMixin,
+                     mixins.UpdateModelMixin,
                      viewsets.GenericViewSet):
     class IsActivityOwner(BasePermission):
         def has_object_permission(self, request, view, obj):
