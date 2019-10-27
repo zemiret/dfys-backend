@@ -88,18 +88,32 @@ class TestSkillViewSet(APITestCase):
         self.assertEqual(skill.name, skill_name)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+    def test_update(self):
+        skill = SkillFactory(owner=self.user)
+        self.client.force_login(self.user)
+        response = self.client.put(reverse('skill-detail', kwargs={'pk': skill.pk}), data={
+            'name': 'newName'
+        })
+
+        skill = Skill.objects.get(id=response.data['id'])
+
+        self.assertEqual(skill.name, 'newName')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
     def test_list(self):
         """
         Should provide skills flatter overview
         """
         _skill1 = SkillFactory(name='Skill1')
         _skill2 = SkillFactory(name='Skill2')
+        _additional_category = CategoryFactory(owner=UserFactory(username='New user'))
 
         self.client.force_login(self.user)
         response = self.client.get(reverse('skill-list'))
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response.data), 2)
+        self.assertEqual(len(response.data['skills']), 2)
+        self.assertEqual(len(response.data['categories']), 4)
 
     def test_details(self):
         """
@@ -115,8 +129,7 @@ class TestSkillViewSet(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['categories']), 2)
-        self.assertIn('activities', response.data['categories'][0])
-        self.assertIn('activities', response.data['categories'][1])
+        self.assertEqual(len(response.data['activities']), 2)
 
     def test_destroy(self):
         skill1 = SkillFactory(name='Skill1')

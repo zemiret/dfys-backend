@@ -6,6 +6,14 @@ from dfys.core.models import Category, Skill, Activity, ActivityEntry
 ADD_MODIFY_FIELDS = ['add_date', 'modify_date']
 
 
+class DisableCreateUpdate:
+    def update(self, instance, validated_data):
+        raise serializers.ValidationError('This object type cannot be created via {}'.format(self.__class__.__name__))
+
+    def create(self, validated_data):
+        raise serializers.ValidationError('This object type be created via {}'.format(self.__class__.__name__))
+
+
 class ActivityEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = ActivityEntry
@@ -24,7 +32,7 @@ class ActivityFlatSerializer(serializers.ModelSerializer):
         read_only_fields = ADD_MODIFY_FIELDS
 
 
-class ActivityDeepSerializer(serializers.ModelSerializer):
+class ActivityDeepSerializer(serializers.ModelSerializer, DisableCreateUpdate):
     entries = ActivityEntrySerializer(many=True,
                                       source='activityentry_set',
                                       read_only=True)
@@ -33,12 +41,6 @@ class ActivityDeepSerializer(serializers.ModelSerializer):
         model = Activity
         fields = '__all__'
         read_only_fields = ADD_MODIFY_FIELDS
-
-    def create(self, validated_data):
-        raise serializers.ValidationError('Activity cannot be created via ActivityDeepSerializer')
-
-    def update(self, instance, validated_data):
-        raise serializers.ValidationError('Activity cannot be updated via ActivityDeepSerializer')
 
 
 class CategoryFlatSerializer(serializers.ModelSerializer):
@@ -51,16 +53,14 @@ class CategoryFlatSerializer(serializers.ModelSerializer):
 
 
 class CategoryInSkillSerializer(serializers.ModelSerializer):
-    activities = ActivityFlatSerializer(read_only=True, many=True, source='activity_set')
-
     class Meta:
         model = Category
         exclude = ('owner', 'is_base_category')
 
 
 class SkillFlatSerializer(serializers.ModelSerializer):
-    categories = CategoryFlatSerializer(read_only=True, many=True)
     owner = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    categories = serializers.PrimaryKeyRelatedField(required=False, many=True, read_only=True)
 
     class Meta:
         model = Skill
@@ -70,20 +70,30 @@ class SkillFlatSerializer(serializers.ModelSerializer):
     def create(self, validate_data):
         base_categories = Category.objects.filter(owner=validate_data['owner'], is_base_category=True)
         skill = Skill.objects.create(**validate_data)
-        skill.categories.add(*base_categories)
+        skill.categories.set(base_categories)
         return skill
+
+
+class SkillListSerializer(DisableCreateUpdate, serializers.Serializer):
+    skills = SkillFlatSerializer(many=True, read_only=True)
+    categories = CategoryFlatSerializer(many=True, read_only=True)
 
 
 class SkillDeepSerializer(serializers.ModelSerializer):
     categories = CategoryInSkillSerializer(read_only=True, many=True)
+    activities = serializers.SerializerMethodField()
 
     class Meta:
         model = Skill
         exclude = ('owner', )
         read_only_fields = ['add_date']
 
+    def get_activities(self, skill):
+        activities = Activity.objects.filter(skill=skill)
+        return ActivityFlatSerializer(activities, many=True, context={'request': self.context['request']}).data
+
     def create(self, validated_data):
-        raise serializers.ValidationError('Skill cannot be created via DeepSkillSerializer')
+        raise serializers.ValidationError('Skill cannot be created via {}'.format(self.__class__.__name__))
 
     def update(self, instance, validated_data):
-        raise serializers.ValidationError('Skill cannot be updated via DeepSkillSerializer')
+        raise serializers.ValidationError('Skill cannot be created via {}'.format(self.__class__.__name__))

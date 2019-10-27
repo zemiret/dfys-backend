@@ -10,7 +10,7 @@ from rest_framework.response import Response
 from dfys.core.models import Category, Skill, Activity, ActivityEntry
 from dfys.core.permissions import IsOwner
 from dfys.core.serializers import CategoryFlatSerializer, SkillFlatSerializer, SkillDeepSerializer, \
-    ActivityFlatSerializer, ActivityDeepSerializer, ActivityEntrySerializer
+    ActivityFlatSerializer, ActivityDeepSerializer, ActivityEntrySerializer, SkillListSerializer
 
 
 @login_required
@@ -33,6 +33,7 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
 
 class SkillViewSet(viewsets.ModelViewSet):
+    # TODO: Add add_category, remove_category actions
     permission_classes = [IsOwner]
 
     def get_queryset(self):
@@ -42,6 +43,18 @@ class SkillViewSet(viewsets.ModelViewSet):
         if self.action == 'retrieve':
             return SkillDeepSerializer
         return SkillFlatSerializer
+
+    def list(self, request, *args, **kwargs):
+        skills = self.get_queryset()
+        skill_ids = skills.values_list('categories', flat=True)
+        categories = Category.objects.filter(owner=request.user, pk__in=skill_ids)
+
+        serializer = SkillListSerializer({
+            'skills': skills,
+            'categories': categories
+        })
+
+        return Response(serializer.data)
 
 
 class ActivitiesViewSet(viewsets.ModelViewSet):
