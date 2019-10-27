@@ -3,11 +3,15 @@ from rest_framework import serializers
 from dfys.core.models import Category, Skill, Activity, ActivityEntry
 
 
+ADD_MODIFY_FIELDS = ['add_date', 'modify_date']
+
+
 class ActivityEntrySerializer(serializers.ModelSerializer):
     class Meta:
         model = ActivityEntry
         fields = '__all__'
-        read_only_fields = ['add_date', 'modify_date']
+        ordering = ['modify_date']
+        read_only_fields = ADD_MODIFY_FIELDS
         extra_kwargs = {
             'activity': {'write_only': True, 'required': False}
         }
@@ -17,20 +21,18 @@ class ActivityFlatSerializer(serializers.ModelSerializer):
     class Meta:
         model = Activity
         fields = '__all__'
-        read_only_fields = ['add_date', 'modify_date']
+        read_only_fields = ADD_MODIFY_FIELDS
 
 
 class ActivityDeepSerializer(serializers.ModelSerializer):
-    entries = serializers.SerializerMethodField()
+    entries = ActivityEntrySerializer(many=True,
+                                      source='activityentry_set',
+                                      read_only=True)
 
     class Meta:
         model = Activity
         fields = '__all__'
-        read_only_fields = ['add_date', 'modify_date']
-
-    def get_entries(self, instance):
-        entries = instance.activityentry_set.all().order_by('-modify_date')
-        return ActivityEntrySerializer(entries, many=True).data
+        read_only_fields = ADD_MODIFY_FIELDS
 
     def create(self, validated_data):
         raise serializers.ValidationError('Activity cannot be created via ActivityDeepSerializer')
