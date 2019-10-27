@@ -1,9 +1,9 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
-from rest_framework import viewsets, mixins
+from rest_framework import viewsets, mixins, status
 from rest_framework.decorators import action
-from rest_framework.exceptions import ValidationError
+from rest_framework.exceptions import ValidationError, NotFound
 from rest_framework.permissions import BasePermission
 from rest_framework.response import Response
 
@@ -12,6 +12,8 @@ from dfys.core.permissions import IsOwner
 from dfys.core.serializers import CategoryFlatSerializer, SkillFlatSerializer, SkillDeepSerializer, \
     ActivityFlatSerializer, ActivityDeepSerializer, ActivityEntrySerializer, SkillListSerializer
 
+
+# TODO: Creating base categories when user is created
 
 @login_required
 def index(request):
@@ -55,6 +57,28 @@ class SkillViewSet(viewsets.ModelViewSet):
         })
 
         return Response(serializer.data)
+
+    @action(['post'], detail=True)
+    def add_category(self, request, pk=None):
+        category, skill = self.get_category_skill_for_action(request)
+        skill.categories.add(category)
+        return Response(status=status.HTTP_200_OK)
+
+    @action(['post'], detail=True)
+    def remove_category(self, request, pk=None):
+        category, skill = self.get_category_skill_for_action(request)
+        skill.categories.remove(category)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+    def get_category_skill_for_action(self, request):
+        try:
+            category_pk = request.data
+            category = Category.objects.get(pk=category_pk)
+        except Category.DoesNotExist:
+            raise NotFound('Category not found')
+
+        skill = self.get_object()
+        return category, skill
 
 
 class ActivitiesViewSet(viewsets.ModelViewSet):

@@ -125,19 +125,58 @@ class TestSkillViewSet(APITestCase):
         _act2 = ActivityFactory(skill=skill1)
 
         self.client.force_login(self.user)
-        response = self.client.get(reverse('skill-detail', kwargs={'pk': skill1.id}))
+        response = self.client.get(reverse('skill-detail', kwargs={'pk': skill1.pk}))
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['categories']), 2)
         self.assertEqual(len(response.data['activities']), 2)
 
+    def test_add_category(self):
+        skill = SkillFactory()
+        cat = CategoryFactory()
+
+        self.client.force_login(self.user)
+        response = self.client.post(reverse('skill-add-category', kwargs={'pk': skill.pk}), data=cat.pk)
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(skill.categories.all()), 3)
+
+    def test_add_not_existing_category(self):
+        skill = SkillFactory()
+
+        self.client.force_login(self.user)
+        response = self.client.post(reverse('skill-add-category', kwargs={'pk': skill.pk}), data=(-123))
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(len(skill.categories.all()), 2)
+
+    def test_remove_category(self):
+        skill = SkillFactory()
+        categories = skill.categories.all()
+
+        self.client.force_login(self.user)
+        response = self.client.post(reverse('skill-remove-category', kwargs={'pk': skill.pk}), data=categories[1].pk)
+
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(len(skill.categories.all()), 1)
+        self.assertEqual(skill.categories.all()[0].pk, categories[0].pk)
+
+    def test_remove_not_existing_category(self):
+        skill = SkillFactory()
+
+        self.client.force_login(self.user)
+        response = self.client.post(reverse('skill-remove-category', kwargs={'pk': skill.pk}), data=(-123))
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertEqual(len(skill.categories.all()), 2)
+
     def test_destroy(self):
         skill1 = SkillFactory(name='Skill1')
         self.client.force_login(self.user)
-        response = self.client.delete(reverse('skill-detail', kwargs={'pk': skill1.id}))
+        response = self.client.delete(reverse('skill-detail', kwargs={'pk': skill1.pk}))
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-        self.assertFalse(Skill.objects.filter(id=skill1.id).exists())
+        self.assertFalse(Skill.objects.filter(pk=skill1.pk).exists())
 
 
 class TestActivityViewSet(APITestCase):
@@ -164,7 +203,7 @@ class TestActivityViewSet(APITestCase):
         _comment = CommentFactory(activity=act)
 
         self.client.force_login(self.user)
-        response = self.client.get(reverse('activity-detail', kwargs={'pk': act.id}))
+        response = self.client.get(reverse('activity-detail', kwargs={'pk': act.pk}))
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['entries']), 2)
@@ -177,8 +216,8 @@ class TestActivityViewSet(APITestCase):
 
         response = self.client.post(reverse('activity-list'), data={
             'title': 'title',
-            'category': cat.id,
-            'skill': skill.id,
+            'category': cat.pk,
+            'skill': skill.pk,
             'description': 'desc',
         })
 
@@ -194,7 +233,7 @@ class TestActivityViewSet(APITestCase):
         act = ActivityFactory()
 
         self.client.force_login(self.user)
-        response = self.client.delete(reverse('activity-detail', kwargs={'pk': act.id}))
+        response = self.client.delete(reverse('activity-detail', kwargs={'pk': act.pk}))
 
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertFalse(Activity.objects.filter(id=act.id).exists())
