@@ -120,9 +120,11 @@ class TestSkillListSerializer:
         assert len(skills) == 1
 
         for i in (0, 1):
-            assert res_cat[i]['id'] == categories[i].id
-            assert res_cat[i]['name'] == categories[i].name
-            assert res_cat[i]['is_base_category'] == categories[i].is_base_category
+            cat_id = categories[i].id
+
+            assert res_cat[cat_id]['id'] == categories[i].id
+            assert res_cat[cat_id]['name'] == categories[i].name
+            assert res_cat[cat_id]['is_base_category'] == categories[i].is_base_category
 
     def test_create(self):
         with pytest.raises(serializers.ValidationError):
@@ -171,7 +173,7 @@ class TestSkillDeepSerializer:
 
         data = s.data
         data['add_date'] = parse_datetime(data['add_date'])
-        data_act = data['activities'][0]
+        data_act = data['activities'][act.id]
         data_act['add_date'] = parse_datetime(data_act['add_date'])
         data_act['modify_date'] = parse_datetime(data_act['modify_date'])
 
@@ -179,18 +181,18 @@ class TestSkillDeepSerializer:
             id=skill.id,
             name='TestSkill',
             add_date=mock_now(),
-            categories=[
-                dict(
+            categories={
+                categories[0].id: dict(
                     id=categories[0].id,
                     name=categories[0].name,
                 ),
-                dict(
+                categories[1].id: dict(
                     id=categories[1].id,
                     name=categories[1].name,
                 )
-            ],
-            activities=[
-                dict(
+            },
+            activities={
+                act.id: dict(
                     id=act.id,
                     title=act.title,
                     category=categories[0].id,
@@ -199,7 +201,7 @@ class TestSkillDeepSerializer:
                     add_date=mock_now(),
                     modify_date=mock_now()
                 )
-            ]
+            }
         )
 
     def test_create(self):
@@ -316,8 +318,8 @@ class TestActivityDeepSerializer:
 
         data = s.data
 
-        comment_data = data['entries'][0]
-        attachment_data = data['entries'][1]
+        comment_data = data['entries'][comment.id]
+        attachment_data = data['entries'][attachment.id]
 
         data['add_date'] = parse_datetime(data['add_date'])
         data['modify_date'] = parse_datetime(data['modify_date'])
@@ -334,18 +336,18 @@ class TestActivityDeepSerializer:
             category=act.category.id,
             add_date=mock_now(),
             modify_date=mock_now(),
-            entries=[
-                dict(
+            entries={
+                attachment.id: dict(
                     id=attachment.id,
                     add_date=mock_now(),
                     modify_date=mock_now(),
                     comment=''
                 ),
-                dict(
+                comment.id: dict(
                     id=comment.id,
                     add_date=mock_now(),
                     modify_date=mock_now(),
                     comment=comment.comment,
                 ),
-            ]
+            }
         )

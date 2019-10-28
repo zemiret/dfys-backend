@@ -193,9 +193,9 @@ class TestActivityViewSet(APITestCase):
 
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        self.assertEqual(response.data[0]['id'], act3.id)
-        self.assertEqual(response.data[1]['id'], act2.id)
-        self.assertEqual(response.data[2]['id'], act1.id)
+        self.assertEqual(response.data[act3.id]['id'], act3.id)
+        self.assertEqual(response.data[act2.id]['id'], act2.id)
+        self.assertEqual(response.data[act1.id]['id'], act1.id)
 
     def test_details(self):
         act = ActivityFactory()
