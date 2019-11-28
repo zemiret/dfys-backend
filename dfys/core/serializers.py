@@ -1,5 +1,6 @@
 from abc import ABC
 
+from django.contrib.auth.models import User
 from rest_framework import serializers
 from rest_framework.utils.serializer_helpers import ReturnDict
 
@@ -131,3 +132,9 @@ class SkillDeepSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         raise serializers.ValidationError('Skill cannot be created via {}'.format(self.__class__.__name__))
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('username', 'email')

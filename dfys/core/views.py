@@ -1,19 +1,37 @@
+from django.contrib.auth import authenticate
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
 from rest_framework import viewsets, mixins, status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.exceptions import ValidationError, NotFound
-from rest_framework.permissions import BasePermission
+from rest_framework.permissions import BasePermission, AllowAny
 from rest_framework.response import Response
 
 from dfys.core.models import Category, Skill, Activity, ActivityEntry
 from dfys.core.permissions import IsOwner
 from dfys.core.serializers import CategoryFlatSerializer, SkillFlatSerializer, SkillDeepSerializer, \
-    ActivityFlatSerializer, ActivityDeepSerializer, ActivityEntrySerializer, SkillListSerializer
+    ActivityFlatSerializer, ActivityDeepSerializer, ActivityEntrySerializer, SkillListSerializer, UserSerializer
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def login(request):
+    username, password = request.data['username'], request.data['password']
+    user = authenticate(username=username, password=password)
+
+    if user is None:
+        return Response(status=status.HTTP_401_UNAUTHORIZED)
+    else:
+        serialized = UserSerializer(user)
+        return Response(serialized.data, status=status.HTTP_200_OK)
 
 
 # TODO: Creating base categories when user is created
+@api_view(['POST'])
+def register(request):
+    pass
+
 
 @login_required
 def index(request):
