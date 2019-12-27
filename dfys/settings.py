@@ -11,6 +11,25 @@ https://docs.djangoproject.com/en/2.2/ref/settings/
 """
 
 import os
+import json
+
+from django.core.exceptions import ImproperlyConfigured
+
+with open(os.environ.get('SETTINGS_CONFIG', 'dfys/dev.env.json')) as f:
+    configs = json.loads(f.read())
+
+
+def get_setting(setting, config=configs):
+    try:
+        val = config[setting]
+        if val == 'True':
+            val = True
+        elif val == 'False':
+            val = False
+        return val
+    except KeyError:
+        raise ImproperlyConfigured('Improperly configured: Setting {} not found'.format(setting))
+
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -20,10 +39,10 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 # See https://docs.djangoproject.com/en/2.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '(^=r#2g2yak7h5j3vsqly5&%)e67$8$tm$xqynt79u5oe4&t3n'
+SECRET_KEY = get_setting('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = get_setting('DEBUG')
 
 ALLOWED_HOSTS = []
 
@@ -77,13 +96,7 @@ WSGI_APPLICATION = 'dfys.wsgi.application'
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'HOST': 'db',
-        'PORT': 5432
-    }
+    'default': get_setting('DEFAULT_DB')
 }
 
 
@@ -123,7 +136,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/2.2/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = get_setting('STATIC_URL')
 
 # LOGIN_REDIRECT_URL = 'index'
 # LOGOUT_REDIRECT_URL = 'login'

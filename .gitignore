@@ -3,3 +3,5 @@ Pipfile.lock
 
 .idea
 scripts/**.png
+
+dfys/**.env.json

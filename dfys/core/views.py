@@ -1,4 +1,4 @@
-from django.contrib.auth import authenticate
+from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 
@@ -16,13 +16,14 @@ from dfys.core.serializers import CategoryFlatSerializer, SkillFlatSerializer, S
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
-def login(request):
+def login_view(request):
     username, password = request.data['username'], request.data['password']
     user = authenticate(username=username, password=password)
 
     if user is None:
         return Response(status=status.HTTP_401_UNAUTHORIZED)
     else:
+        login(request, user)
         serialized = UserSerializer(user)
         return Response(serialized.data, status=status.HTTP_200_OK)
 
@@ -53,7 +54,6 @@ class CategoryViewSet(viewsets.ModelViewSet):
 
 
 class SkillViewSet(viewsets.ModelViewSet):
-    # TODO: Add add_category, remove_category actions
     permission_classes = [IsOwner]
 
     def get_queryset(self):

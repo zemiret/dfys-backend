@@ -30,8 +30,9 @@ activities_router.register(r'entries', views.EntriesViewSet, basename='activity-
 urlpatterns = [
     path('', views.index, name='index'),
     path('admin/', admin.site.urls),
+#    path('api/test/', views.test),
     path('api/', include(router.urls)),
     path('api/', include(activities_router.urls)),
-    path('api/login', views.login),
+    path('api/login', views.login_view),
     path('api/register', views.register),
 ]
