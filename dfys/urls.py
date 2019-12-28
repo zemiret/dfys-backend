@@ -27,12 +27,17 @@ router.register(r'activities', views.ActivitiesViewSet, basename='activity')
 activities_router = routers.NestedDefaultRouter(router, r'activities', lookup='activity')
 activities_router.register(r'entries', views.EntriesViewSet, basename='activity-entry')
 
+auth_routes = [
+    path('api/auth/login', views.login_view),
+    path('api/auth/logout', views.logout_view),
+    path('api/auth/register', views.register),
+]
+
 urlpatterns = [
     path('', views.index, name='index'),
     path('admin/', admin.site.urls),
-#    path('api/test/', views.test),
     path('api/', include(router.urls)),
     path('api/', include(activities_router.urls)),
-    path('api/login', views.login_view),
-    path('api/register', views.register),
 ]
+
+urlpatterns += auth_routes

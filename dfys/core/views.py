@@ -1,5 +1,6 @@
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 from django.shortcuts import render
 
 from rest_framework import viewsets, mixins, status
@@ -28,10 +29,29 @@ def login_view(request):
         return Response(serialized.data, status=status.HTTP_200_OK)
 
 
-# TODO: Creating base categories when user is created
 @api_view(['POST'])
+def logout_view(request):
+    logout(request)
+    return Response(status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
 def register(request):
-    pass
+    def create_base_categories(owner):
+        Category.objects.create(owner=owner, name='DONE', is_base_category=True)
+        Category.objects.create(owner=owner, name='IN PROGRESS', is_base_category=True)
+        Category.objects.create(owner=owner, name='FUTURE', is_base_category=True)
+
+    username, password, email = request.data['username'], \
+                                request.data['password'], \
+                                request.data['email']
+
+    user = User.objects.create_user(username, email, password)
+    create_base_categories(user)
+
+    serialized = UserSerializer(user)
+    return Response(serialized.data, status=status.HTTP_200_OK)
 
 
 @login_required

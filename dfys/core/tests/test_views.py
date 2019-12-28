@@ -47,8 +47,10 @@ class TestCategoryViewSet(APITestCase):
         self.client.force_login(cat1.owner)
         response = self.client.get(reverse('category-list'))
 
-        self.assertEqual(response.data, s.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[cat1.pk], s.data[cat1.pk])
+        self.assertEqual(response.data[cat2.pk], s.data[cat2.pk])
+        self.assertEqual(response.data[cat3.pk], s.data[cat3.pk])
 
     def test_destroy(self):
         cat = CategoryFactory(is_base_category=False)

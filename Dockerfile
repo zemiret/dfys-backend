@@ -1,5 +1,5 @@
 # DEV Dockerfile.
-FROM python:3
+FROM python:3.8
 
 ENV PYTHONBUFFERED 1
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -21,4 +21,6 @@ RUN cd /tmp && \
 	   pip install -r requirements-dev.txt
 
 COPY . /app/
+
+ENV SETTINGS_CONFIG /app/dfys/dev.docker.env.json
 
