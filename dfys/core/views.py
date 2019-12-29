@@ -96,6 +96,17 @@ class SkillViewSet(viewsets.ModelViewSet):
 
         return Response(serializer.data)
 
+    def create(self, request, *args, **kwargs):
+        skill_serializer = self.get_serializer(data=request.data)
+
+        if skill_serializer.is_valid(raise_exception=True):
+            skill = skill_serializer.save()
+            base_categories = Category.objects.filter(owner=request.user, is_base_category=True)
+            skill.categories.add(*base_categories)
+
+            response = SkillFlatSerializer(skill)
+            return Response(response.data, status=status.HTTP_201_CREATED)
+
     @action(['post'], detail=True)
     def add_category(self, request, pk=None):
         category, skill = self.get_category_skill_for_action(request)

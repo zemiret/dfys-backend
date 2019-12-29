@@ -27,6 +27,11 @@ class Skill(TrackCreateModel):
     categories = models.ManyToManyField(Category)
     name = models.CharField(max_length=128)
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['owner', 'name'], name='unique_name_per_owner')
+        ]
+
 
 class Activity(TrackCreateUpdateModel):
     title = models.CharField(max_length=128)

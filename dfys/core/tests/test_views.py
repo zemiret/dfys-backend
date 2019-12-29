@@ -80,6 +80,7 @@ class TestSkillViewSet(APITestCase):
 
     def test_create(self):
         skill_name = 'SkillName'
+        base_category = CategoryFactory(owner=self.user, is_base_category=True)
         self.client.force_login(self.user)
         response = self.client.post(reverse('skill-list'), data={
             'name': skill_name
@@ -87,8 +88,9 @@ class TestSkillViewSet(APITestCase):
 
         skill = Skill.objects.get(id=response.data['id'])
 
-        self.assertEqual(skill.name, skill_name)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(skill.name, skill_name)
+        self.assertTrue(skill.categories.filter(pk=base_category.pk).exists())
 
     def test_update(self):
         skill = SkillFactory(owner=self.user)
