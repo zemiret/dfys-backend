@@ -21,7 +21,8 @@ class TestCategoryFlatSerializer:
 
         assert s.data == dict(id=category.id,
                               name=category.name,
-                              is_base_category=False)
+                              is_base_category=False,
+                              display_order=0)
 
     def test_create(self):
         request = create_user_request(APIRequestFactory().post)
@@ -185,10 +186,12 @@ class TestSkillDeepSerializer:
                 categories[0].id: dict(
                     id=categories[0].id,
                     name=categories[0].name,
+                    display_order=categories[0].display_order,
                 ),
                 categories[1].id: dict(
                     id=categories[1].id,
                     name=categories[1].name,
+                    display_order=categories[1].display_order,
                 )
             },
             activities={

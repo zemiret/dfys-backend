@@ -39,9 +39,11 @@ def logout_view(request):
 @permission_classes([AllowAny])
 def register(request):
     def create_base_categories(owner):
-        Category.objects.create(owner=owner, name='DONE', is_base_category=True)
-        Category.objects.create(owner=owner, name='IN PROGRESS', is_base_category=True)
-        Category.objects.create(owner=owner, name='FUTURE', is_base_category=True)
+        Category.objects.create(owner=owner, name='DONE', is_base_category=True, display_order=Category.ORDER_MIN_VALUE)
+        Category.objects.create(owner=owner, name='IN PROGRESS', is_base_category=True, display_order=0)
+        Category.objects.create(
+            owner=owner, name='FUTURE', is_base_category=True, display_order=Category.ORDER_MAX_VALUE
+        )
 
     username, password, email = request.data['username'], \
                                 request.data['password'], \

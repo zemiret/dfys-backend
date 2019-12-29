@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 
 
@@ -17,9 +18,17 @@ class TrackCreateUpdateModel(TrackCreateModel):
 
 
 class Category(models.Model):
+    ORDER_MIN_VALUE = -100
+    ORDER_MAX_VALUE = 100
+
     owner = models.ForeignKey(User, on_delete=models.CASCADE)
     name = models.CharField(max_length=128, blank=False)
     is_base_category = models.BooleanField(default=False)
+    display_order = models.SmallIntegerField(default=0,
+                                             validators=[
+                                                 MinValueValidator(ORDER_MIN_VALUE),
+                                                 MaxValueValidator(ORDER_MAX_VALUE)
+                                             ])
 
 
 class Skill(TrackCreateModel):

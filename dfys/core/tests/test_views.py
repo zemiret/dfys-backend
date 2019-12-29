@@ -188,9 +188,10 @@ class TestActivityViewSet(APITestCase):
         self.user = UserFactory()
 
     def test_recent(self):
-        act1 = ActivityFactory()
-        act2 = ActivityFactory()
-        act3 = ActivityFactory()
+        skill = SkillFactory()
+        act1 = ActivityFactory(skill=skill)
+        act2 = ActivityFactory(skill=skill)
+        act3 = ActivityFactory(skill=skill)
 
         self.client.force_login(self.user)
         response = self.client.get(reverse('activity-recent'))
